@@ -1,8 +1,5 @@
 """Tests for config defaults, paths, settings, and loader (Task 1.3)."""
-import os
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
 
