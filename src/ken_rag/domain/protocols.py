@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Iterator, Protocol, runtime_checkable
 
 from ken_rag.domain.models import (
-    Answer,
     CandidateFile,
     Chunk,
     EmbeddedChunk,

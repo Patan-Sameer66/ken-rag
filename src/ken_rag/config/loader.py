@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -84,9 +85,18 @@ def load_settings(
                 hint="Fix the JSON syntax or delete the file to use defaults.",
             ) from exc
 
+        if not isinstance(file_data, dict):
+            raise KenError(
+                f"Config file must be a JSON object: {cfg_path}",
+                hint="The config file should be a JSON object {...}, not an array or scalar.",
+            )
+
         for field, raw_value in file_data.items():
             if field not in _FIELD_SPEC:
-                continue  # unknown keys are ignored silently
+                warnings.warn(
+                    f"Unknown config key ignored: {field!r}", stacklevel=2
+                )
+                continue
             _, cast = _FIELD_SPEC[field]
             values[field] = _cast(field, raw_value, cast)
 
@@ -97,11 +107,17 @@ def load_settings(
         if raw is not None:
             values[field] = _cast(field, raw, cast)
 
-    # Layer 4: explicit overrides (highest priority, types assumed correct)
+    # Layer 4: explicit overrides (highest priority)
     if overrides:
         for field, val in overrides.items():
-            if field in values:
-                values[field] = val
+            if field not in values:
+                continue
+            if field == "db_path":
+                val = val if isinstance(val, Path) else Path(val)
+            elif field in _FIELD_SPEC:
+                _, cast = _FIELD_SPEC[field]
+                val = _cast(field, val, cast)
+            values[field] = val
 
     return Settings(
         k=values["k"],
