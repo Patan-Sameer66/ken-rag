@@ -45,3 +45,9 @@ Remaining phases: 2 code-aware chunking (moat), 3 tracking/incremental/git, 4 se
 
 ## Resume command
 Dispatch one sonnet implementer for Tasks 1.11+1.12 (tightly coupled integration capstone) with the detailed brief; then run full suite, commit, present Checkpoint 1.
+
+---
+
+## UPDATE: Phase 1 COMPLETE (2026-06-24)
+Capstone done + verified (216 tests pass/1 skip, ruff clean; real live-Ollama smoke showed friendly ModelNotPulledError, no traceback). At Checkpoint 1 (STOP for user review).
+NEXT: Phase 2 — code-aware chunking (THE MOAT): `chunking/code/{language_map,python_ast_backend,treesitter_backend,code_chunker,subsplit}.py` (use tree-sitter-language-pack), golden fixtures under tests/fakes/fixtures_repo/, wire CODE into ChunkerRegistry via its existing register() seam, then Task 2.5 retrieval-quality test, then Checkpoint 2.
