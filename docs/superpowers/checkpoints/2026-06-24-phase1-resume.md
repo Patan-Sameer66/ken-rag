@@ -21,8 +21,17 @@ Planning done + approved. Building Phase 1 via subagents. Git repo at project ro
 
 Last commit: `7116749 feat: hybrid retrieval`.
 
+## ⚠ PARTIAL UNVERIFIED WORK PRESENT (untracked, NOT committed)
+The capstone agent ran ~3 min before the interrupt and wrote these files (timestamps 23:23–23:26). They are **UNVERIFIED**: no tests written, suite never run, not reviewed. Do NOT trust as-is.
+- `src/ken_rag/tracking/{hasher.py, walker.py, __init__.py}`
+- `src/ken_rag/pipeline/{ingest.py (4.9KB), query.py (4.4KB), __init__.py}`
+- `src/ken_rag/cli/{context.py (160L), render.py (164L), errors.py (33L), commands/{add.py, ask.py, __init__.py}}`
+- MISSING: `cli/app.py`, integration `test_pipeline.py`, e2e `test_cli_add_ask.py`, `tests/e2e/__init__.py`.
+
+Resume options: (a) review+verify these partial files against the brief below, add the missing app.py + tests, run full suite, fix, commit; OR (b) `git clean -fd src/ken_rag/cli src/ken_rag/pipeline src/ken_rag/tracking` and regenerate cleanly from the brief. Recommend (a) if files look sound on read, else (b).
+
 ## NEXT STEP — finish Phase 1 capstone (Tasks 1.11 + 1.12)
-Build (was about to dispatch, interrupted):
+Build (full brief — applies whether verifying partial files or regenerating):
 - `tracking/hasher.py` (streaming sha256), `tracking/walker.py` (walk path, skip .ken/ .git/) — minimal; full FileTracker/ignore/git = Phase 3.
 - `pipeline/ingest.py` (walk→detect→hash→parse→chunk→embed→upsert; first ingest writes `embedder_name`+dim to meta; re-validate every op → EmbedderMismatchError; re-index changed-by-hash files) + `pipeline/query.py` (guard→embed_query→RetrievalPipeline.retrieve→PromptBuilder→generator.stream(num_ctx=settings.num_ctx)→citation.build). Combined <200 lines.
 - `cli/context.py` build_context(settings, overrides=) DI root (arch §Composition) — overrides inject fakes.
