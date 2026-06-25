@@ -10,7 +10,7 @@ from typing import Annotated
 import typer
 
 from ken_rag.cli.errors import handle_ken_error
-from ken_rag.cli.render import print_answer
+from ken_rag.cli.render import print_answer, status_spinner
 from ken_rag.domain.errors import KenError
 
 
@@ -25,7 +25,8 @@ def ask_command(
         raise typer.Exit(code=1)
 
     try:
-        answer = app_ctx.query.ask(question)
+        with status_spinner("Thinking"):
+            answer = app_ctx.query.ask(question)
     except KenError as exc:
         handle_ken_error(exc)
         return  # unreachable

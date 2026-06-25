@@ -72,6 +72,29 @@ def test_add_single_file(tmp_path, monkeypatch):
     assert "Indexed 1 file" in result.output
 
 
+def test_list_empty_shows_hint(monkeypatch):
+    ctx = _fake_context()
+    monkeypatch.setattr(app_module, "build_context", lambda settings, **kw: ctx)
+    result = runner.invoke(app_module.app, ["list"])
+    assert result.exit_code == 0, result.output
+    assert "No files indexed" in result.output
+    assert "ken add" in result.output
+
+
+def test_add_then_list_shows_file(tmp_path, monkeypatch):
+    (tmp_path / "auth.md").write_text(_DOC, encoding="utf-8")
+    ctx = _fake_context()
+    monkeypatch.setattr(app_module, "build_context", lambda settings, **kw: ctx)
+    # Realistic usage: run from inside the project so paths display relative.
+    monkeypatch.chdir(tmp_path)
+
+    runner.invoke(app_module.app, ["add", "."])
+    result = runner.invoke(app_module.app, ["list"])
+    assert result.exit_code == 0, result.output
+    assert "auth.md" in result.output
+    assert "1 file" in result.output
+
+
 def test_add_nonexistent_path_errors(monkeypatch):
     ctx = _fake_context()
     monkeypatch.setattr(app_module, "build_context", lambda settings, **kw: ctx)

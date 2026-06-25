@@ -36,10 +36,12 @@ class AppContext:
         settings: Settings,
         ingest: IngestPipeline,
         query: QueryPipeline,
+        store: object,
     ) -> None:
         self.settings = settings
         self.ingest = ingest
         self.query = query
+        self.store = store  # VectorStore (for `ken list` / `ken status`)
 
 
 def build_context(
@@ -156,4 +158,6 @@ def build_context(
         settings=settings,
     )
 
-    return AppContext(settings=settings, ingest=ingest, query=query)
+    return AppContext(
+        settings=settings, ingest=ingest, query=query, store=vector_store
+    )

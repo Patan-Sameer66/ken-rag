@@ -18,6 +18,7 @@ import typer
 from ken_rag.cli.context import build_context
 from ken_rag.cli.commands.add import add_command
 from ken_rag.cli.commands.ask import ask_command
+from ken_rag.cli.commands.list_cmd import list_command
 from ken_rag.config.loader import load_settings
 
 app = typer.Typer(
@@ -51,6 +52,7 @@ def main_callback(
 # Register commands (additive — later phases add list/status/search/chat/setup/model).
 app.command("add", help="Index a file or folder.")(add_command)
 app.command("ask", help="Ask a question and get a grounded, cited answer.")(ask_command)
+app.command("list", help="List indexed files.")(list_command)
 
 
 def main() -> None:

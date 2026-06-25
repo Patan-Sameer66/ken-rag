@@ -21,9 +21,10 @@ from contextlib import contextmanager
 from typing import Iterator
 
 from rich.console import Console
+from rich.table import Table
 from rich.theme import Theme
 
-from ken_rag.domain.models import Answer, Citation
+from ken_rag.domain.models import Answer, Citation, FileRecord
 
 # ---------------------------------------------------------------------------
 # Theme — defined once, reused everywhere
@@ -81,7 +82,7 @@ def format_citation(citation: Citation, index: int) -> str:
     Format: ``① path:start-end  symbol``
     """
     label = citation_label(index)
-    loc = f"{citation.file_path}:{citation.line_start}-{citation.line_end}"
+    loc = f"{display_path(citation.file_path)}:{citation.line_start}-{citation.line_end}"
     sym = f"  {citation.symbol_name}" if citation.symbol_name else ""
     return f"{label} {loc}{sym}"
 
@@ -111,7 +112,7 @@ def print_answer(answer: Answer, *, console: Console | None = None) -> None:
         con.print()  # blank separator
         for i, cit in enumerate(answer.citations, start=1):
             label = citation_label(i)
-            loc = f"{cit.file_path}:{cit.line_start}-{cit.line_end}"
+            loc = f"{display_path(cit.file_path)}:{cit.line_start}-{cit.line_end}"
             sym = f"  {cit.symbol_name}" if cit.symbol_name else ""
             # label+symbol in accent, path+range in dim
             con.print(
@@ -144,6 +145,69 @@ def print_stream(tokens: Iterator[str], *, console: Console | None = None) -> st
         con.print(token, end="", highlight=False)
     con.print()  # trailing newline after stream ends
     return "".join(parts)
+
+
+def display_path(path_str: str) -> str:
+    """Show *path_str* relative to the current dir when possible, else as-is.
+
+    Keeps `ken list` and citations readable: an indexed file under the working
+    directory shows as ``src/auth.py`` instead of a long absolute path.
+    """
+    import os
+    from pathlib import Path
+
+    try:
+        rel = os.path.relpath(path_str, Path.cwd())
+    except (ValueError, OSError):
+        return path_str
+    # Only prefer the relative form when it doesn't escape upward (no leading ..).
+    if not rel.startswith(".."):
+        return rel.replace(os.sep, "/")
+    return path_str
+
+
+def _format_indexed_at(value: object) -> str:
+    """Format a FileRecord.indexed_at (datetime or epoch float) as 'YYYY-MM-DD HH:MM'."""
+    import datetime as _dt
+
+    if isinstance(value, _dt.datetime):
+        return value.astimezone().strftime("%Y-%m-%d %H:%M")
+    if isinstance(value, (int, float)):
+        return _dt.datetime.fromtimestamp(value).strftime("%Y-%m-%d %H:%M")
+    return str(value)
+
+
+def print_file_table(records: list[FileRecord], *, console: Console | None = None) -> None:
+    """Print indexed files as a Rich table, or a warm empty-state hint.
+
+    Columns: File · Type · Chunks · Last indexed.
+    """
+    con = console or _stdout()
+    if not records:
+        con.print("No files indexed yet.")
+        con.print("[meta]Run `ken add <path>` to index a file or folder.[/meta]")
+        return
+
+    table = Table(box=None, pad_edge=False, header_style="accent")
+    table.add_column("File", overflow="fold")
+    table.add_column("Type", style="meta")
+    table.add_column("Chunks", justify="right", style="meta")
+    table.add_column("Last indexed", style="meta")
+
+    total_chunks = 0
+    for rec in sorted(records, key=lambda r: r.file_path):
+        total_chunks += rec.chunk_count
+        table.add_row(
+            display_path(rec.file_path),
+            rec.file_type,
+            str(rec.chunk_count),
+            _format_indexed_at(rec.indexed_at),
+        )
+    con.print(table)
+    con.print(
+        f"[meta]{len(records)} file{'s' if len(records) != 1 else ''}, "
+        f"{total_chunks} chunk{'s' if total_chunks != 1 else ''} indexed.[/meta]"
+    )
 
 
 @contextmanager
