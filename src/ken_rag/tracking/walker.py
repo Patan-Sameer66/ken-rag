@@ -9,7 +9,27 @@ from pathlib import Path
 from typing import Iterator
 
 # Directories to always skip (Phase 1 hard-coded list).
-_SKIP_DIRS: frozenset[str] = frozenset({".ken", ".git"})
+# Phase 3 adds full .gitignore/.kenignore support via pathspec; until then this
+# hard-coded set keeps `ken add .` from indexing dependency/build/cache junk.
+_SKIP_DIRS: frozenset[str] = frozenset(
+    {
+        ".ken",
+        ".git",
+        ".venv",
+        "venv",
+        "node_modules",
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".tox",
+        ".idea",
+        ".vscode",
+        "dist",
+        "build",
+        ".eggs",
+    }
+)
 
 
 def walk_files(root: Path) -> Iterator[Path]:

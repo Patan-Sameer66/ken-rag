@@ -11,6 +11,7 @@ from typing import Annotated
 import typer
 
 from ken_rag.cli.errors import handle_ken_error
+from ken_rag.cli.render import status_spinner
 from ken_rag.domain.errors import KenError
 
 
@@ -29,8 +30,10 @@ def add_command(
         typer.echo(f"Path does not exist: {resolved}", err=True)
         raise typer.Exit(code=1)
 
+    target = "file" if resolved.is_file() else "folder"
     try:
-        count = app_ctx.ingest.run(resolved)
+        with status_spinner(f"Indexing {target}: {resolved}"):
+            count = app_ctx.ingest.run(resolved)
     except KenError as exc:
         handle_ken_error(exc)
         return  # unreachable — handle_ken_error raises; here for type-checker

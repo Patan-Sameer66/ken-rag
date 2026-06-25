@@ -61,6 +61,17 @@ def test_add_then_ask_end_to_end(tmp_path, monkeypatch):
     assert "auth.md" in ask_result.output
 
 
+def test_add_single_file(tmp_path, monkeypatch):
+    f = tmp_path / "single.md"
+    f.write_text(_DOC, encoding="utf-8")
+    ctx = _fake_context()
+    monkeypatch.setattr(app_module, "build_context", lambda settings, **kw: ctx)
+
+    result = runner.invoke(app_module.app, ["add", str(f)])
+    assert result.exit_code == 0, result.output
+    assert "Indexed 1 file" in result.output
+
+
 def test_add_nonexistent_path_errors(monkeypatch):
     ctx = _fake_context()
     monkeypatch.setattr(app_module, "build_context", lambda settings, **kw: ctx)

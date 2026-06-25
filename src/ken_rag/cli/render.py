@@ -17,6 +17,7 @@ Path and line range are dim; number and symbol_name are accent.
 from __future__ import annotations
 
 import os
+from contextlib import contextmanager
 from typing import Iterator
 
 from rich.console import Console
@@ -143,6 +144,23 @@ def print_stream(tokens: Iterator[str], *, console: Console | None = None) -> st
         con.print(token, end="", highlight=False)
     con.print()  # trailing newline after stream ends
     return "".join(parts)
+
+
+@contextmanager
+def status_spinner(message: str, *, console: Console | None = None):
+    """Show a simple dot spinner with *message* while the block runs.
+
+    Uses Rich's ``dots`` spinner in the accent color. On a non-TTY or with
+    ``NO_COLOR`` set, Rich renders this without animation (no garbage in pipes).
+
+    Usage::
+
+        with status_spinner("Indexing…"):
+            do_work()
+    """
+    con = console or _stdout()
+    with con.status(f"[accent]{message}[/accent]", spinner="dots"):
+        yield
 
 
 def print_error(message: str, hint: str = "", *, console: Console | None = None) -> None:
