@@ -47,7 +47,7 @@ On a lighter machine, swap the answer model for `qwen2.5:1.5b` or `llama3.2:1b`.
 ## Install
 
 ```bash
-git clone https://github.com/<your-handle>/ken-rag
+git clone https://github.com/Patan-Sameer66/ken-rag
 cd ken-rag
 uv tool install .          # or: pipx install .
 ```
